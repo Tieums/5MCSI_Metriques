@@ -33,33 +33,14 @@ def mongraphique():
 def histogramme():
     return render_template("histogramme.html")
 
-# Nouvelle route pour afficher les commits
-@app.route('/mesCommits/')
-def mesCommits():
-    # URL de l'API pour récupérer les commits
-    url = 'https://api.github.com/repos/Tieums/5MCSI_Metriques/commits'
-    response = urlopen(url)
-    raw_content = response.read()
-    json_content = json.loads(raw_content.decode('utf-8'))
-
-    # Extraire la date des commits minute par minute
-    commit_dates = []
-    for commit in json_content:
-        # Extraire la date dans le champ 'commit', 'author', 'date'
-        date_str = commit['commit']['author']['date']
-        date_object = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%SZ')
-        commit_dates.append(date_object.strftime("%Y-%m-%d %H:%M"))
-
-    # Compter le nombre de commits par minute
-    commit_counts = {}
-    for date in commit_dates:
-        if date in commit_counts:
-            commit_counts[date] += 1
-        else:
-            commit_counts[date] = 1
-
-    # Retourner les résultats sous forme de JSON pour utilisation dans le graphique
-    return jsonify(commit_counts)
+@app.route('/extract-minutes/<date_string>')
+def extract_minutes(date_string):
+    try:
+        date_object = datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%SZ')
+        minutes = date_object.strftime('%Y-%m-%d %H:%M')  # Format minute
+        return jsonify({'minutes': minutes})
+    except ValueError:
+        return jsonify({'error': 'Invalid date format. Use the following format: YYYY-MM-DDTHH:MM:SSZ'}), 400
 
 @app.route('/commits/')
 def commits():
