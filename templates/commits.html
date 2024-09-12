@@ -29,7 +29,7 @@
     chart.draw(dataTable, options);
   }
   // Récupération de données depuis notre API /tawarano/
-  fetch('/tawarano/')
+  fetch('/mesCommits/')
     .then(response => response.json())
     .then(data => {
       drawChart(data);
