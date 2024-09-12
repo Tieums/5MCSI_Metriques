@@ -1,15 +1,13 @@
-from flask import Flask, render_template_string, render_template, jsonify
-from flask import render_template
-from flask import json
+from flask import Flask, render_template, jsonify
 from datetime import datetime
 from urllib.request import urlopen
-import sqlite3
-                                                                                                                                       
-app = Flask(__name__)                                                                                                                  
-                                                                                                                                       
+import json
+
+app = Flask(__name__)
+
 @app.route('/')
 def hello_world():
-    return render_template('hello.html') #Comm2
+    return render_template('hello.html')
 
 @app.route('/contact/')
 def MaPremiereAPI():
@@ -35,20 +33,38 @@ def mongraphique():
 def histogramme():
     return render_template("histogramme.html")
 
-@app.route("/mesCommits/")
+# Nouvelle route pour afficher les commits
+@app.route('/commits/')
 def commits():
-    response = urlopen('https://api.github.com/repos/OpenRSI/5MCSI_Metriques/commits')
+    # URL de l'API pour récupérer les commits
+    url = 'https://api.github.com/repos/OpenRSI/5MCSI_Metriques/commits'
+    response = urlopen(url)
     raw_content = response.read()
     json_content = json.loads(raw_content.decode('utf-8'))
-    results = []
-    for list_element in json_content.get('list', []):
-        dt_value = list_element.get('dt')
-        results.append({'Jour': dt_value, 'temp': temp_day_value})
-    return jsonify(results=results)
 
-@app.route("/commits/")
-def commits():
-    return render_template("commits.html")
-  
+    # Extraire la date des commits minute par minute
+    commit_dates = []
+    for commit in json_content:
+        # Extraire la date dans le champ 'commit', 'author', 'date'
+        date_str = commit['commit']['author']['date']
+        date_object = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%SZ')
+        commit_dates.append(date_object.strftime("%Y-%m-%d %H:%M"))
+
+    # Compter le nombre de commits par minute
+    commit_counts = {}
+    for date in commit_dates:
+        if date in commit_counts:
+            commit_counts[date] += 1
+        else:
+            commit_counts[date] = 1
+
+    # Retourner les résultats sous forme de JSON pour utilisation dans le graphique
+    return jsonify(commit_counts)
+
+@app.route('/graph_commits/')
+def graph_commits():
+    return render_template('commits.html')
+
+
 if __name__ == "__main__":
-  app.run(debug=True)
+    app.run(debug=True)
