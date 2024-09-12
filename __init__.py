@@ -34,7 +34,7 @@ def histogramme():
     return render_template("histogramme.html")
 
 # Nouvelle route pour afficher les commits
-@app.route('/commits/')
+@app.route('/graph_commits/')
 def commits():
     # URL de l'API pour récupérer les commits
     url = 'https://api.github.com/repos/OpenRSI/5MCSI_Metriques/commits'
@@ -61,7 +61,7 @@ def commits():
     # Retourner les résultats sous forme de JSON pour utilisation dans le graphique
     return jsonify(commit_counts)
 
-@app.route('/graph_commits/')
+@app.route('/commits/')
 def graph_commits():
     return render_template('commits.html')
 
